@@ -14,8 +14,9 @@ class SparseVector:
                 idx_val = part.split(":")
                 idx = int(idx_val[0])
                 val = float(idx_val[1])
-                self.indices.append(idx)
-                self.values.append(val)
+                if idx not in self.indices:
+                    self.indices.append(idx)
+                    #self.values.append(val)
     @staticmethod
     def load(inpath,fmt="libsvm"):
         vecs = []
@@ -42,9 +43,9 @@ class TrainingData:
         values = []
         #print 'shape', np.array([len(sparse_vecs),WORD_HASH_DIM], dtype=np.int64).shape
         for idx,vec in enumerate(sparse_vecs):
-            for cur_idx_val in sorted(zip(vec.indices,vec.values),key=operator.itemgetter(0)):
-                indices.append([idx,cur_idx_val[0]])
-                values.append(cur_idx_val[1])
+            for cur_idx_val in sorted(vec.indices):
+                indices.append([idx,cur_idx_val])
+                values.append(1.0)
 
         tensor = tf.SparseTensorValue(
             indices=indices, #indices

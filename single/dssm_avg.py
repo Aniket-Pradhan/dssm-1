@@ -160,16 +160,16 @@ def feed_dict(Train,batch_idx):
         return {query_batch:query_in,doc_batch:doc_in}
 
 
-config = tf.ConfigProto()  # log_device_placement=True)
+config = tf.ConfigProto()#log_device_placement=True)
 config.gpu_options.allow_growth = True
 #if not FLAGS.gpu:
 #config = tf.ConfigProto(device_count= {'GPU' : 0})
 
-with tf.Session(config=config) as sess, tf.device('/cpu:0'):
+saver = tf.train.Saver(tf.global_variables(), max_to_keep=1000)
+with tf.Session(config=config) as sess, tf.device('/gpu:0'):
     sess.run(tf.initialize_all_variables())
     train_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/train', sess.graph)
     test_writer = tf.summary.FileWriter(FLAGS.summaries_dir + '/test', sess.graph)
-    saver = tf.train.Saver(tf.global_variables(), max_to_keep=1000)
     # Actual execution
     start = time.time()
     # fp_time = 0
@@ -185,39 +185,29 @@ with tf.Session(config=config) as sess, tf.device('/cpu:0'):
         epoch_loss = 0
         epoch_acc = 0
         for batch_idx in range(batch_num):
-            loss_v = sess.run(loss, feed_dict=feed_dict(True,batch_idx))
+            loss_v,acc_v = sess.run([loss,accuracy], feed_dict=feed_dict(True,batch_idx))
             epoch_loss += loss_v
-            #epoch_acc += acc_v
-            #acc_v,loss_v = sess.run(accuracy,loss, feed_dict=feed_dict(True,batch_idx))
-            #epoch_loss += loss_v
-            #epoch_acc += acc_v
+            epoch_acc += acc_v
 
         epoch_loss /= batch_num
         epoch_acc /= batch_num
-        train_loss = sess.run(loss_summary, feed_dict={average_loss: epoch_loss,average_acc:epoch_acc})
+        train_loss,train_acc = sess.run([loss_summary,acc_summary], feed_dict={average_loss: epoch_loss,average_acc:epoch_acc})
         train_writer.add_summary(train_loss, step + 1)
-        #train_writer.add_summary(train_acc, step + 1)
-        #train_acc,train_loss = sess.run(acc_summary,loss_summary, feed_dict={average_loss: epoch_loss,average_acc:epoch_acc})
-        #train_writer.add_summary(train_loss, step + 1)
-        #train_writer.add_summary(train_acc, step + 1)
+        train_writer.add_summary(train_acc, step + 1)
         train_loss = epoch_loss
         epoch_loss = 0
         epoch_acc = 0
         for batch_idx in range(int(test_data.size()/BS)):
-            loss_v = sess.run(loss, feed_dict=feed_dict(False, batch_idx))
+            loss_v,acc_v = sess.run([loss,accuracy], feed_dict=feed_dict(False, batch_idx))
             epoch_loss += loss_v
-            #epoch_acc += acc_v
+            epoch_acc += acc_v
         epoch_loss /= float(int(test_data.size()/BS))
         epoch_acc /= float(int(test_data.size()/BS))
-        test_loss = sess.run(loss_summary, feed_dict={average_loss: epoch_loss,average_acc:epoch_acc})
+        test_loss,test_acc = sess.run([loss_summary,acc_summary], feed_dict={average_loss: epoch_loss,average_acc:epoch_acc})
         test_writer.add_summary(test_loss, step + 1)
-        #test_writer.add_summary(test_cc, step + 1)
+        test_writer.add_summary(test_acc, step + 1)
         saver.save(sess,FLAGS.modeldir,global_step=step)
         test_loss = epoch_loss
-        train_acc = 0
-        test_acc = 0
-        #train_loss = 0
-        #test_loss = 0
         print ("Step #%d:\n Train Loss: %4.3f, ACC: %4.3f | Test  Loss: %4.3f ACC:%4.3f " %
                (step,train_loss,train_acc,test_loss,test_acc))
 
