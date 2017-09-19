@@ -14,8 +14,9 @@ class SparseVector:
                 idx_val = part.split(":")
                 idx = int(idx_val[0])
                 val = float(idx_val[1])
-                self.indices.append(idx)
-                self.values.append(val)
+                if idx not in self.indices:
+                    self.indices.append(idx)
+                    #self.values.append(val)
     @staticmethod
     def load(inpath,fmt="libsvm"):
         vecs = []
@@ -26,7 +27,7 @@ class SparseVector:
                 vecs.append(vec)
         return vecs
 
-WORD_HASH_DIM = 7415
+WORD_HASH_DIM = 9350
 class TrainingData:
     def __init__(self):
         self.query_vecs = []
@@ -37,19 +38,19 @@ class TrainingData:
         return len(self.clicks)
 
     @staticmethod
-    def toSparseTensorValue(sparse_vecs=[],dim=1):
+    def toSparseTensorValue(sparse_vecs=[],dim=WORD_HASH_DIM):
         indices = []
         values = []
         #print 'shape', np.array([len(sparse_vecs),WORD_HASH_DIM], dtype=np.int64).shape
         for idx,vec in enumerate(sparse_vecs):
-            for cur_idx_val in sorted(zip(vec.indices,vec.values),key=operator.itemgetter(0)):
-                indices.append([idx,cur_idx_val[0]])
-                values.append(cur_idx_val[1])
+            for cur_idx_val in sorted(vec.indices):
+                indices.append([idx,cur_idx_val])
+                values.append(1.0)
 
         tensor = tf.SparseTensorValue(
             indices=indices, #indices
             values=values, #value
-            dense_shape=[len(sparse_vecs),WORD_HASH_DIM] #shape
+            dense_shape=[len(sparse_vecs),dim] #shape
         )
         return tensor
         #return indices,values,[len(sparse_vecs),WORD_HASH_DIM]
@@ -69,10 +70,10 @@ class TrainingData:
         if clicks_file:
             self.clicks = self.load_clicks(clicks_file)
         else:
-            assert len(self.query_vecs)==len(self.doc_vecs)
-            self.clicks = [(x,x) for x in range(len(self.query_vecs))]
+            #assert len(self.query_vecs)==len(self.doc_vecs)
+            self.clicks = [(x,x) for x in range(len(self.doc_vecs))]
 
-    def get_batch(self,batch_size,batch_id):
+    def get_batch(self,batch_size,batch_id,wordhashdim=WORD_HASH_DIM):
         if batch_size*(batch_id+1) > len(self.clicks):
             print "None returned"
             return None,None
@@ -81,8 +82,33 @@ class TrainingData:
         doc_batch = map(lambda x:self.doc_vecs[x[1]],clicks_batch)
         #print len(query_batch)
         #print len(doc_batch)
-        query_tensor = TrainingData.toSparseTensorValue(query_batch,dim=WORD_HASH_DIM)
-        doc_tensor = TrainingData.toSparseTensorValue(doc_batch,dim=WORD_HASH_DIM)
+        query_tensor = TrainingData.toSparseTensorValue(query_batch,dim=wordhashdim)
+        doc_tensor = TrainingData.toSparseTensorValue(doc_batch,dim=wordhashdim)
+        return query_tensor,doc_tensor
+
+    def get_query_batch(self,batch_size,batch_id,wordhashdim):
+        if batch_size*(batch_id+1) > len(self.query_vecs):
+            return None
+        query_batch = self.query_vecs[batch_size*batch_id:batch_size*(batch_id+1)]
+        return TrainingData.toSparseTensorValue(query_batch,dim=wordhashdim)
+
+    def get_doc_batch(self,batch_size, batch_id, wordhashdim):
+        if batch_size*(batch_id+1) > len(self.doc_vecs):
+            return None
+        doc_batch = self.doc_vecs[batch_size*batch_id:batch_size*(batch_id+1)]
+        return TrainingData.toSparseTensorValue(doc_batch,dim=wordhashdim)
+ 
+    def get_NQuery_batch(self,batch_size,batch_id,queryNum,wordhashdim=WORD_HASH_DIM):
+        if batch_size*(batch_id+1) > len(self.clicks):
+            print "None returned"
+            return None,None
+        clicks_batch = self.clicks[batch_size*batch_id:batch_size*(batch_id+1)]
+        query_batch = map(lambda x:self.query_vecs[x[0]],clicks_batch)
+        doc_batch = map(lambda x:self.doc_vecs[x[1]],clicks_batch)
+        #print len(query_batch)
+        #print len(doc_batch)
+        query_tensor = TrainingData.toSparseTensorValue(query_batch,dim=wordhashdim)
+        doc_tensor = TrainingData.toSparseTensorValue(doc_batch,dim=wordhashdim)
         return query_tensor,doc_tensor
 
 if __name__ == '__main__':

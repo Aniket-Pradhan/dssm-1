@@ -17,7 +17,9 @@ flags.DEFINE_bool('gpu', 1, "Enable GPU or not")
 flags.DEFINE_string('testdata','../data/test',"Test Data path")
 #flags.DEFINE_string('traindata','../data/train',"Training data path")
 flags.DEFINE_string('traindata','../data/test',"Training data path")
-
+flags.DEFINE_integer('usernum',-1,"user num is required to do the embedding")
+flags.DEFINE_integer('userdim',300,"user embedding vector dimension")
+flags.DEFINE_integer('hidden_size',128,'hidden layer size')
 
 # load training data for now
 start = time.time()
@@ -42,6 +44,10 @@ query_in_shape = np.array([BS, TRIGRAM_D], np.int64)
 doc_in_shape = np.array([BS, TRIGRAM_D], np.int64)
 
 epoches = train_data.size()/BS
+
+user_num = FLAGS.usernum
+embedding_size= FLAGS.userdim
+hidden_size = FLAGS.hidden_size
 #query_in_shape = np.array([BS, TRIGRAM_D])
 #doc_in_shape = np.array([BS, TRIGRAM_D])
 print 'query_in_shape ', query_in_shape
@@ -62,11 +68,13 @@ def variable_summaries(var, name):
 
 with tf.name_scope('input'):
     # Shape [BS, TRIGRAM_D].
-    #query_batch = tf.sparse_placeholder(tf.float32, shape=query_in_shape, name='QueryBatch')
-    query_batch = tf.sparse_placeholder(tf.float32, name='QueryBatch')
+    user_batch = tf.placeholder(tf.int32,name="UserBatch")
     # Shape [BS, TRIGRAM_D]
     #doc_batch = tf.sparse_placeholder(tf.float32, shape=doc_in_shape, name='DocBatch')
     doc_batch = tf.sparse_placeholder(tf.float32, name='DocBatch')
+
+with tf.name_scope('embedding'):
+    embeddings = tf.Variable(tf.random_uniform([user_num, embedding_size], -1.0, 1.0),name="embeddings")
 
 with tf.name_scope('L1'):
     l1_par_range = np.sqrt(6.0 / (TRIGRAM_D + L1_N))
