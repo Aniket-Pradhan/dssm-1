@@ -1,0 +1,23 @@
+dssm:
+    input_size: 10048
+    l1_size: 256
+    l2_size: 128
+cf:
+    l1_size: 256
+    l2_size: 128
+    vid_num: 37652
+    embed_size: 300
+    hasoutputvid: True
+models:
+    cf: True
+    dssm: True
+    img: False
+query_size: 10
+batch_size: 512
+negative_sample_size: 50
+learning_rate: 0.1
+num_steps: 1000
+modeldir: '/opt/dev/dssm/model/'
+logdir: '/opt/dev/dssm/log/'
+traindat: '/tmp/part-00199-822b6e37-420e-4b86-89b2-7f52b4c38d79.csv'
+testdat: '/tmp/part-00199-822b6e37-420e-4b86-89b2-7f52b4c38d79.csv'
