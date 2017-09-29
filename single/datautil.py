@@ -17,6 +17,7 @@ class SparseVector:
                 if idx not in self.indices:
                     self.indices.append(idx)
                     #self.values.append(val)
+        return self
     @staticmethod
     def load(inpath,fmt="libsvm"):
         vecs = []
@@ -38,7 +39,7 @@ class TrainingData:
         return len(self.clicks)
 
     @staticmethod
-    def toSparseTensorValue(sparse_vecs=[],dim=WORD_HASH_DIM):
+    def toSparseTensorValue(sparse_vecs=[],dim=1):
         indices = []
         values = []
         #print 'shape', np.array([len(sparse_vecs),WORD_HASH_DIM], dtype=np.int64).shape
