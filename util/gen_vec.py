@@ -6,6 +6,7 @@ from single import datautil
 import preparedssm
 from tqdm import tqdm
 import argparse
+
 parser = argparse.ArgumentParser()
 parser.add_argument('--infile',type=str,help="input text file",default="/opt/dssm/data/data.0")
 parser.add_argument('--outfile',type=str,help="result vec file",default="/opt/dssm/data/queryvec.out")
