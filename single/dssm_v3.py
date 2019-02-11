@@ -5,6 +5,7 @@ import sys
 import numpy as np
 import tensorflow as tf
 from datautil import TrainingData
+
 flags = tf.app.flags
 FLAGS = flags.FLAGS
 flags.DEFINE_string('summaries_dir', './log/20170828_related/', 'Summaries directory')
@@ -21,11 +22,11 @@ flags.DEFINE_integer('wordhashdim',-1,"wordhashdim")
 
 # load training data for now
 start = time.time()
-print 'Start to loading test data ',FLAGS.testdata
+print('Start to loading test data ',FLAGS.testdata)
 test_data = TrainingData()
 test_data.load_data('{}.queryvec'.format(FLAGS.testdata),'{}.docvec'.format(FLAGS.testdata))
 
-print 'Start to loading training data ',FLAGS.traindata
+print('Start to loading training data ',FLAGS.traindata)
 train_data = TrainingData()
 train_data.load_data('{}.queryvec'.format(FLAGS.traindata),'{}.docvec'.format(FLAGS.traindata))
 
@@ -46,8 +47,8 @@ doc_in_shape = np.array([BS, TRIGRAM_D], np.int64)
 epoches = train_data.size()/BS
 #query_in_shape = np.array([BS, TRIGRAM_D])
 #doc_in_shape = np.array([BS, TRIGRAM_D])
-print 'query_in_shape ', query_in_shape
-print 'doc_in_shape ',doc_in_shape
+print('query_in_shape ', query_in_shape)
+print('doc_in_shape ',doc_in_shape)
 
 def variable_summaries(var, name):
     """Attach a lot of summaries to a Tensor."""
