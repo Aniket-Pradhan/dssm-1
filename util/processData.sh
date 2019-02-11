@@ -1,1 +1,1 @@
-python util/preparedata.py --docFile data/raw_data/doc.tsv --queryFile data/raw_data/query.tsv --dataPath data/
+python util/preparedata.py --docFile data/raw_data/doc.tsv --queryFile data/raw_data/query.tsv --dataPath data/ --traindatapath data/training_data/
