@@ -27,7 +27,8 @@ class SparseVector:
                 vecs.append(vec)
         return vecs
 
-WORD_HASH_DIM = 9350
+WORD_HASH_DIM = 2101
+
 class TrainingData:
     def __init__(self):
         self.query_vecs = []
