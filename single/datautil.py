@@ -80,12 +80,17 @@ class TrainingData:
 			print("None returned")
 			return None,None
 		clicks_batch = self.clicks[int(batch_size*batch_id):int(batch_size*(batch_id+1))]
-		query_batch = map(lambda x:self.query_vecs[x[0]],clicks_batch)
-		doc_batch = map(lambda x:self.doc_vecs[x[1]],clicks_batch)
+
+		print(len(self.query_vecs), len(self.doc_vecs), " ++++++")
+		print(len(clicks_batch), " =======")
+
+		query_batch = list(map(lambda x:self.query_vecs[x[0]], clicks_batch))
+		doc_batch = list(map(lambda x:self.doc_vecs[x[1]], clicks_batch))
+		
 		#print len(query_batch)
 		#print len(doc_batch)
-		query_tensor = TrainingData.toSparseTensorValue(query_batch,dim=wordhashdim)
-		doc_tensor = TrainingData.toSparseTensorValue(doc_batch,dim=wordhashdim)
+		query_tensor = TrainingData.toSparseTensorValue(query_batch, dim=wordhashdim)
+		doc_tensor = TrainingData.toSparseTensorValue(doc_batch, dim=wordhashdim)
 		return query_tensor,doc_tensor
 
 	def get_query_batch(self,batch_size,batch_id,wordhashdim):
